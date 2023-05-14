@@ -20,7 +20,7 @@ pip install mlfactory
 
 Upcoming
 ========
-- dataloader for ouster lidar data
+0. dataloader for ouster lidar data
 
 1. Coco bounding box dataloader colab
 
