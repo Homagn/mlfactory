@@ -1,0 +1,13 @@
+start from raw_lidar_data
+use the extract_lidar_data.py in visualizers to extract projected lidar frames from the pcap files
+and save them to extracted_lidar_data folder (in /datasets/lidar_post_detection/ folder)
+
+then upload the extracted lidar data folder to supervisely and do the object rectangle annotation
+from supervisely download images+json files as supervisely_annotated folder (in /datasets/lidar_post_detection/ folder)
+
+now run dataloaders/utils/read_supervisely.py to converted that to annotated_lidar_data folder (in /datasets/lidar_post_detection/ folder)
+its the final folder used by the imgcsvloader.py to supply to trainer
+it contains images renamed as <number>.png and a csv file that stores the image name and corresponding list of keypoint labels for the image
+
+once the annotated_lidar_data folder has been created then only you can use the imgcsvloader for the training application
+run imgcsvloader.py to visualize the data as well

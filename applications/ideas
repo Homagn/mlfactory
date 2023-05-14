@@ -1,0 +1,76 @@
+[Generative modeling to convert rgb image to lidar like reflectivity/ambient channel images- think frameworks similar to style transfer]
+
+[Transfer learning object detection from 2d image datasets to 3d lidar detection based on intelligent preprocessing that highlights the contours of object, there must be some fast edge/contour detection algorithm for pointclouds, for RGB can use HED to generate contours for training]
+
+[look up point feature histogram (PFH) based techniques for 3d object detection in lidar]
+
+[2d BEV based mapping and localization on lidar datasets]
+
+[multi camera same part segmentation]
+	- image1 taken by camera 1 in one orientation, image2 taken by camera 2 in another orientation
+	- segment the common areas in both image 1 and image 2
+	- 2 segmentation results - the part of image 2 that is in image 1 (image 1 segmented) and the part of image 1 that is in image 2 (image 2 segmented)
+	- even better if can segment in multiple colors for different regions
+	- can use ai2thor segmentation images to train
+
+[Related to above ^ also take a look at pointSIFT paper]
+
+[Invariant keypoint estimation/visual odometry]
+
+	- say you take an image from one location, slightly move the camera and take another image
+	- how can you determine the points that remained same in both the images ?
+	- this is very useful for visual odemetry- just by vision determine how much the robot has moved
+		- can do done in 3 ways
+		
+		- obtain a very dense rgbd pointcloud of the scene, and can generate data from there by placing the camera in open3d in different perspectives, project the 2 pointclouds from two perspectives to obtain the 2 different images and then train a NN to predict the points in both images that remained the same (groundtruth can be easily extracted using pointcloud information)
+		
+		- or pick any image from any dataset and pick 4 points randomly and apply a random homographic transformation using opencv and train a NN to predict the parameters of the matrix directly
+		
+		- or certain datasets like nyuv2 collect data as video with supplied motion in between franes, so can predict directly moton between consequtive frames
+
+
+[Colored pointcloud segmentation using pointnet or direct pointcloud based techniques]
+
+
+[Reimplement deeplabv3+ from keras blog into pytorch for image instance segmentation]
+
+
+
+[Stereo depth estimation]
+
+[optical flow]
+
+[neural end to end SLAM]
+	-slam datasets
+	https://github.com/youngguncho/awesome-slam-datasets
+	
+[use focal loss in segmentation tasks]
+
+[very simple SLAM world to get started with SLAM ideas]
+
+	A set of functions to generate random grid worlds
+	grid world contains only white space where agent can navigate
+	and random squares and rectangles (random sizes and orientations)
+	
+	and maybe some salt pepper noise in the form of dots over the whole map
+	
+	and random walls (basically extremely long rectangles over a large area in random orientations)
+
+	checks are ensured such that the obstacles are not too much cluttered together
+
+	at each step agent can perceive a small patch view around it out of the global map
+	that perception would now be comprised of outlines of the obstacles instead of direct local patch
+	(ex- square would be converted to 90 degree lines)
+	
+	also environment can give an output called innovation patch
+	which is basically the points which are same across t and t+1 perception patches (similar to invariant keypoint detection techniques used in SLAM)
+	
+	there is also uncertainty
+		when agent moves the motion is not perfect (add gaussian noise)
+		when agent perceives local patch, obstacles size, aspect ratio, relative location and orientation can change very slightly
+		perception noise also reduces exponentially with respect to obstacle distance (closer obstacles have much less perception noise)
+	
+	with this environment now we can try classic techniques like particle filters and also DL techniques like graph conv
+	environment can be upgraded to ROS based using lidar and spawning random cuboids now
+
+
