@@ -19,6 +19,9 @@ Out of box colab usage
 
 1. (NYUV2 dataloader) Easy monocular depth estimation - https://colab.research.google.com/drive/1T2gONs_gst4zpdS7fBoIaQclgg3J2Jgk?usp=sharing
 
+2. Polygon annotation tool allowing to create polygon masks for segmentation directly in colab
+- https://colab.research.google.com/drive/1YUoMU3H_m9KM6xTrAKAy9ebiDWWzXTle?usp=sharing
+
 
 Getting Started
 ===============
