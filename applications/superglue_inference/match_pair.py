@@ -1,30 +1,31 @@
 import os
 import sys
 
-cimportpath = os.getcwd()
-if cimportpath[cimportpath.rfind("/")+1:]=="dataloaders": #if this module is called from dataloaders code
-    os.environ['superglue'] = '../applications/superglue_inference'
-    sys.path.append(os.path.join(os.environ['superglue']))
-
-if cimportpath[cimportpath.rfind("/")+1:]=="examples": #if this module is called from dataloaders code
-    os.environ['superglue'] = '../applications/superglue_inference'
-    sys.path.append(os.path.join(os.environ['superglue']))
-
-if cimportpath[cimportpath.rfind("/")+1:]=="deep_modular_scene_mapper": #if this module is called from dataloaders code
-    os.environ['superglue'] = '../../applications/superglue_inference'
-    sys.path.append(os.path.join(os.environ['superglue']))
-
-if cimportpath[cimportpath.rfind("/")+1:]=="sfm3d": #if this module is called from dataloaders code
-    os.environ['superglue'] = '../../applications/superglue_inference'
-    sys.path.append(os.path.join(os.environ['superglue']))
-
-if cimportpath[cimportpath.rfind("/")+1:]=="superglue_inference":
-    os.environ['superglue'] = '../superglue_inference'
-    sys.path.append(os.path.join(os.environ['superglue']))
-    os.environ['supergluetop'] = '../'
-    sys.path.append(os.path.join(os.environ['supergluetop']))
 
 
+# An installation agnostic method to find and link to root of the package which is mlfactory
+#==========================================================
+import re
+
+try: #testing the functions locally without pip install
+  import __init__
+  cimportpath = os.path.abspath(__init__.__file__)
+except: #testing while mlfactory is installed using pip
+  import mlfactory
+  cimportpath = os.path.abspath(mlfactory.__file__)+'/applications/superglue_inference/__init__.py'
+
+idxlist = [m.start() for m in re.finditer(r"/", cimportpath)]
+invoking_submodule = cimportpath[idxlist[-2]+1:idxlist[-1]]
+print("In superglue_inference/match_pair.py got invoking submodule using re",invoking_submodule)
+main_package_loc = cimportpath[:cimportpath.rfind('mlfactory')+len('mlfactory')]
+print("In superglue_inference/match_pair.py got main package location ",main_package_loc)
+
+
+os.environ['superglue'] = main_package_loc+'/applications/superglue_inference'
+os.environ['top'] = main_package_loc
+sys.path.append(os.path.join(os.environ['superglue']))
+sys.path.append(os.path.join(os.environ['top']))
+#==========================================================
 
 
 from pathlib import Path
@@ -33,9 +34,13 @@ import cv2
 import matplotlib.cm as cm
 import torch
 
-import superglue_inference
-from superglue_inference.models.matching import Matching
-from superglue_inference.models.utils import (AverageTimer, VideoStreamer,make_matching_plot_fast, frame2tensor)
+#import superglue_inference
+from applications.superglue_inference.models.matching import Matching
+from applications.superglue_inference.models.utils import (AverageTimer, VideoStreamer,make_matching_plot_fast, frame2tensor)
+
+#from models.matching import Matching
+#from models.utils import (AverageTimer, VideoStreamer,make_matching_plot_fast, frame2tensor)
+
 
 import numpy as np
 #torch.set_grad_enabled(False)
@@ -46,6 +51,7 @@ from skimage.transform import ProjectiveTransform, AffineTransform
 def check_weights():
     gpath = os.environ['superglue']
     if os.path.exists(gpath+"/models/weights")==False:
+    #if os.path.exists("models/weights")==False:
         print("pretrained weights need to be downloaded and extracted ")
         os.system("pip install gdown")
         os.system("gdown --id 1RU5jIDkvaXE_h0fEew-xYCiJs87QDMEG")
@@ -67,6 +73,7 @@ class matcher(object):
         sinkhorn_iterations = 20
         match_threshold = 0.2
         show_keypoints = False
+        self.viz_plt = False
 
 
 
@@ -218,8 +225,17 @@ class matcher(object):
                     last_frame, frame, kpts0, kpts1, mkpts0, mkpts1, color, text,
                     path=None, show_keypoints=self.show_keypoints, small_text=small_text)
 
-            cv2.imshow('SuperGlue matches', out)
-            cv2.waitKey(10)
+            if self.viz_plt:
+                import matplotlib
+                #matplotlib.use('TkAgg')
+                from matplotlib import pyplot as plt
+                fig, ax = plt.subplots()
+                ax.set_axis_off()
+                ax.imshow(out)
+                #plt.show()
+            else:
+                cv2.imshow('SuperGlue matches', out)
+                cv2.waitKey(0)
 
 
 
@@ -234,6 +250,7 @@ class matcher(object):
 
 if __name__ == '__main__':
     m = matcher()
+    #m.viz_plt = True
     im1 = np.array(cv2.imread("sample1.png",0))
     im2 = np.array(cv2.imread("sample2.png",0))
     m.match(im1,im2)

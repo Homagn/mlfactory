@@ -10,24 +10,52 @@ Table of contents
 =================
 
 <!--ts-->
-   * [Out of box colab usage](#out-of-box-colab-usage)
    * [Getting Started](#getting-started)
+   * [Out of box colab usage](#out-of-box-colab-usage)
 <!--te-->
-
-Out of box colab usage
-======================
-
-1. (NYUV2 dataloader) Easy monocular depth estimation 
-- https://colab.research.google.com/drive/1T2gONs_gst4zpdS7fBoIaQclgg3J2Jgk?usp=sharing
-
-2. Polygon annotation tool allowing to create polygon masks for segmentation directly in colab
-- https://colab.research.google.com/drive/1YUoMU3H_m9KM6xTrAKAy9ebiDWWzXTle?usp=sharing
 
 
 Getting Started
 ===============
 
 pip install mlfactory
+
+
+
+Out of box colab usage
+======================
+
+Machine Learning and AI applications full pipeline
+--------------------------------------------------
+
+1. High definition mapping using monocular camera (using monocular depth estimation and superglue feature extractor)
+- https://colab.research.google.com/drive/1lZYHjYszROIvMjtZgAp7r5eL1YZC9x9M?usp=sharing
+
+
+Compose machine learning applications in a modular way
+------------------------------------------------------
+
+1. (NYUV2 dataloader) Easy monocular depth estimation 
+- https://colab.research.google.com/drive/1T2gONs_gst4zpdS7fBoIaQclgg3J2Jgk?usp=sharing
+
+
+Annotation and other computer vision utilities
+----------------------------------------------
+
+1. Polygon annotation tool allowing to create polygon masks for segmentation directly in colab
+- https://colab.research.google.com/drive/1YUoMU3H_m9KM6xTrAKAy9ebiDWWzXTle?usp=sharing
+
+
+2. Easy usage of superglue neural network based image feature matching
+- https://colab.research.google.com/drive/1fqnW1-Dlwz3fYlacTjMUmu5gxreGfjj6?usp=sharing
+
+
+
+
+
+
+
+
 
 
 Upcoming

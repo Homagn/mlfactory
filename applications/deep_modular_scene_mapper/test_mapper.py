@@ -7,26 +7,50 @@ import time
 import copy
 import math
 
-from tools import project_rgbd
-from tools import sift_matching
-
 import os
 import sys
 from datetime import datetime as dt
 
-cimportpath = os.getcwd()
-if cimportpath[cimportpath.rfind("/")+1:]=="deep_modular_scene_mapper": #if this module is called from dataloaders code
-    os.environ['top'] = '../../'
-    os.environ['applications'] = '../../applications'
-    sys.path.append(os.path.join(os.environ['top']))
-    sys.path.append(os.path.join(os.environ['applications']))
+
+
+# An installation agnostic method to find and link to root of the package which is mlfactory
+#==========================================================
+import re
+try: #testing the functions locally without pip install
+  import __init__
+  cimportpath = os.path.abspath(__init__.__file__)
+except: #testing while mlfactory is installed using pip
+  import mlfactory
+  cimportpath = os.path.abspath(mlfactory.__file__)+'/applications/deep_modular_scene_mapper/__init__.py'
+
+idxlist = [m.start() for m in re.finditer(r"/", cimportpath)]
+invoking_submodule = cimportpath[idxlist[-2]+1:idxlist[-1]]
+print("In deep_modular_scene_mapper/main.py got invoking submodule using re",invoking_submodule)
+main_package_loc = cimportpath[:cimportpath.rfind('mlfactory')+len('mlfactory')]
+print("In deep_modular_scene_mapper/main.py got main package location ",main_package_loc)
+
+
+os.environ['applications'] = main_package_loc+'/applications'
+os.environ['top'] = main_package_loc
+sys.path.append(os.path.join(os.environ['applications']))
+sys.path.append(os.path.join(os.environ['top']))
+#==========================================================
+
 
 
 #from superglue_inference.match_pair import matcher
+
 from applications.superglue_inference import match_pair
 from applications.deep_modular_scene_mapper.tools.rigid_transform_3D import rigid_transform_3D
 from applications.deep_modular_scene_mapper.tools import point_plane_icp
 from applications.deep_modular_scene_mapper.tools.depth_estimator import monodepth
+
+from applications.deep_modular_scene_mapper.tools import project_rgbd
+from applications.deep_modular_scene_mapper.tools import sift_matching
+
+#from tools import project_rgbd
+#from tools import sift_matching
+
 
 
 

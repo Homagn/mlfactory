@@ -121,11 +121,11 @@ def project_rgbd_to_pointcloud(rgb_file,depth_file, camera_params, normalizer = 
 
 
     
-    print("X Y Z shapes ",X.shape,Y.shape,Z.shape)
+    #print("X Y Z shapes ",X.shape,Y.shape,Z.shape)
 
     #convert X,Y,Z points to a pcd
     xyz = np.dstack([X,Y,Z]).reshape((X.shape[0]*X.shape[1],3))/ normalizer
-    print("XYZ shape ",xyz.shape)
+    #print("XYZ shape ",xyz.shape)
     colors = color.reshape((X.shape[0]*X.shape[1],3))/255.0
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(xyz)
@@ -140,13 +140,13 @@ def project_rgbd_to_pointcloud(rgb_file,depth_file, camera_params, normalizer = 
     #recover rotated X,Y,Z from the rotated pcd
     rpts = np.array(pcd.points).reshape((X.shape[0],X.shape[1],3))
     X,Y,Z = rpts[:,:,0], rpts[:,:,1], rpts[:,:,2]
-    print("X Y Z shapes ",X.shape,Y.shape,Z.shape)
+    #print("X Y Z shapes ",X.shape,Y.shape,Z.shape)
     colors = np.array(pcd.colors).reshape((X.shape[0],X.shape[1],3))*255.0
     
 
     #for each pixel location in the RGB image stores the corresponding 3d coordinate it is mapped to
     pixel_points = np.dstack([X.T,Y.T,Z.T])
-    print("pixel points shape ",pixel_points.shape)
+    #print("pixel points shape ",pixel_points.shape)
     return pcd, pixel_points
 
 
