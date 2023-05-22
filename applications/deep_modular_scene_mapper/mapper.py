@@ -377,7 +377,7 @@ class mapper(object):
 
   
 
-  def merge_map_poses(self):
+  def merge_map_poses(self, display_result = 'colab'):
     #===================================================================
     #(check the accuracy of poses by reconstructing the scene from untransformed pointclouds stored earlier in rgbds list)
     #(using only the pose list)
@@ -410,7 +410,14 @@ class mapper(object):
     #self.scene_map.extend(self.coord_meshes)
     self.scene_with_coords = [self.scene_map]
     self.scene_with_coords.extend(self.coord_meshes)
-    project_rgbd.show_pcd(self.scene_with_coords)
+    if display_result=='colab':
+      project_rgbd.show_pcd_colab(self.scene_with_coords)
+    elif display_result=='dont_display':
+      print("finished mapping, check results by inspecting mapper.scene_with_coords")
+    else:
+      project_rgbd.show_pcd(self.scene_with_coords)
+
+
 
     #project_rgbd.show_pcd([self.scene_map, self.coord_meshes])
     print("Total number of points in the scene ",np.array(self.scene_map.points).shape[0])
