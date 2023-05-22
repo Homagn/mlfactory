@@ -39,12 +39,12 @@ def extract_video(video_loc = '/datasets/sample_videos/cambridge_office.MOV', ex
       frame = cv2.resize(frame, new_size)
 
       # Display the resulting frame
-      cv2.imshow('Frame',frame)
+      cv2.imshow(str(n),frame)
       cv2.imwrite(extract_loc+str(n)+".jpg",frame)
       n+=1
    
       # Press Q on keyboard to  exit
-      if cv2.waitKey(25) & 0xFF == ord('q'):
+      if cv2.waitKey(10) & 0xFF == ord('q'):
         break
    
     # Break the loop
