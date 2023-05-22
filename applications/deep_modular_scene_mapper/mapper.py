@@ -19,7 +19,13 @@ import re
 try: #testing the functions locally without pip install
   import __init__
   cimportpath = os.path.abspath(__init__.__file__)
+  if 'extensions' in cimportpath:
+    print("Non local testing ")
+    import mlfactory
+    cimportpath = os.path.abspath(mlfactory.__file__)+'/applications/deep_modular_scene_mapper/__init__.py'
+
 except: #testing while mlfactory is installed using pip
+  print("Non local testing")
   import mlfactory
   cimportpath = os.path.abspath(mlfactory.__file__)+'/applications/deep_modular_scene_mapper/__init__.py'
 

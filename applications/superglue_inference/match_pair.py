@@ -8,11 +8,17 @@ import sys
 import re
 
 try: #testing the functions locally without pip install
-  import __init__
-  cimportpath = os.path.abspath(__init__.__file__)
+    import __init__
+    cimportpath = os.path.abspath(__init__.__file__)
+    if 'extensions' in cimportpath:
+        print("Non local usage")
+        import mlfactory
+        cimportpath = os.path.abspath(mlfactory.__file__)+'/applications/superglue_inference/__init__.py'
+
 except: #testing while mlfactory is installed using pip
-  import mlfactory
-  cimportpath = os.path.abspath(mlfactory.__file__)+'/applications/superglue_inference/__init__.py'
+    print("Non local usage")
+    import mlfactory
+    cimportpath = os.path.abspath(mlfactory.__file__)+'/applications/superglue_inference/__init__.py'
 
 idxlist = [m.start() for m in re.finditer(r"/", cimportpath)]
 invoking_submodule = cimportpath[idxlist[-2]+1:idxlist[-1]]
