@@ -4,7 +4,7 @@ import matplotlib
 #apt-get install python3-tk
 #pip install --user numba
 #pip install scikit-image
-matplotlib.use('TkAgg')
+#matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
 from PIL import Image
 import torch
