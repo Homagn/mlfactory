@@ -60,20 +60,21 @@ Annotation and other computer vision utilities
 
 Upcoming
 ========
-0. dataloader for ouster lidar data
+- differentiable pointcloud generation models - https://github.com/puhsu/point-clouds
 
-1. Coco bounding box dataloader colab
+- image animation generation models - https://github.com/snap-research/articulated-animation (code cloned in /ml/misctools/articulated-animation/, run the working demo-> demo_outofbox.py)
 
-2. tum_rgbd dataloader
+- dataloader for ouster lidar datasets
 
-3. visual odometry utility (examples/sfm.py and examples/sfm3d/main.py)
+- Coco bounding box dataloader colab
 
-4. superglue matcher module
+- tum_rgbd dataloader
 
-5. deep_modular_reconstruction - 3D scene mapping using superglue and GLPN depth and open3d registration functions
+- visual odometry utility (examples/sfm.py and examples/sfm3d/main.py)
 
-6. DeepLabv3 finetuning module
+- deep_modular_reconstruction improvements - 3D scene mapping using superglue and GLPN depth and open3d registration functions
 
-7. Resnet finetunining module for 2D image regregression (pose estimation example)
+- DeepLabv3 finetuning module
 
-8. yolov7 estimation module
+- Resnet finetunining module for 2D image regregression (pose estimation example)
+
