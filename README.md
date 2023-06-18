@@ -31,6 +31,8 @@ Machine Learning and AI applications full pipeline
 1. High definition mapping using monocular camera (using monocular depth estimation and superglue feature extractor)
 - https://colab.research.google.com/drive/1lZYHjYszROIvMjtZgAp7r5eL1YZC9x9M?usp=sharing
 
+2. Simple and fast visual odometry directly from MOV files and output pose trajectory in open3d
+- https://colab.research.google.com/drive/1Nr1nYFBKieDQG6UeNsnrV4gHh-l-65G0?usp=sharing
 
 Compose machine learning applications in a modular way
 ------------------------------------------------------
