@@ -322,7 +322,7 @@ class VisualOdometry:
 
         return R, t
 
-    def accumulate_poses(self, Translation, Rotation, pose_sequence):
+    def accumulate_poses(self, Translation, Rotation, t, R, pose_sequence):
         x_cf = Translation[0]
         z_cf = Translation[2]
         Translation += Rotation.dot(t)
@@ -445,7 +445,7 @@ if __name__=="__main__":
 
             point_correspondence_cf, point_correspondence_nf = func.extract_correspondences(current_frame,next_frame,use_superglue)
             R, t = func.find_pose_change(K,point_correspondence_cf,point_correspondence_nf,essential_estimation)
-            Translation, Rotation, pose_sequence = func.accumulate_poses(Translation, Rotation, pose_sequence)
+            Translation, Rotation, pose_sequence = func.accumulate_poses(Translation, Rotation, t, R, pose_sequence)
 
             count += 1
             print('# -----> Frame No:'+str(count),'<----- #', dt.now())
