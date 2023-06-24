@@ -1,31 +1,51 @@
 from pathlib import Path
 
-import click
 import torch
 from sklearn.metrics import f1_score, roc_auc_score
 from torch.utils import data
+import sys,os
 
+# An installation agnostic method to find and link to root of the package which is mlfactory
+#==========================================================
+import re
+try: #testing the functions locally without pip install
+  import __init__
+  cimportpath = os.path.abspath(__init__.__file__)
+  if 'extensions' in cimportpath:
+    print("local testing ")
+    import mlfactory
+    cimportpath = os.path.abspath(mlfactory.__file__)
+
+except: #testing while mlfactory is installed using pip
+  print("Non local testing")
+  import mlfactory
+  cimportpath = os.path.abspath(mlfactory.__file__)
+
+main_package_loc = cimportpath[:cimportpath.rfind('mlfactory')+len('mlfactory')]
+print("got main package location ",main_package_loc)
+
+
+os.environ['top'] = main_package_loc
+sys.path.append(os.path.join(os.environ['top']))
+#==========================================================
+
+
+from models.pytorch.deeplabv3 import createDeepLabv3
+from dataloaders.binary_seg_general import datahandler
+from trainers.pytorch.train_seg2 import train_model
+
+
+'''
 import datahandler
 from model import createDeepLabv3
 from trainer import train_model
+'''
 
+batch_size = 4
+epochs = 25
+exp_directory = 'exp'
+data_directory = '/datasets/small_segmentation/lidar_pillars'
 
-@click.command()
-@click.option("--data-directory",
-              required=True,
-              help="Specify the data directory.")
-@click.option("--exp_directory",
-              required=True,
-              help="Specify the experiment directory.")
-@click.option(
-    "--epochs",
-    default=25,
-    type=int,
-    help="Specify the number of epochs you want to run the experiment for.")
-@click.option("--batch-size",
-              default=4,
-              type=int,
-              help="Specify the batch size for the dataloader.")
 def main(data_directory, exp_directory, epochs, batch_size):
     # Create the deeplabv3 resnet101 model which is pretrained on a subset
     # of COCO train2017, on the 20 categories that are present in the Pascal VOC dataset.
@@ -61,4 +81,4 @@ def main(data_directory, exp_directory, epochs, batch_size):
 
 
 if __name__ == "__main__":
-    main()
+    main(data_directory, exp_directory, epochs, batch_size)

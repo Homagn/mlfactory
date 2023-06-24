@@ -40,6 +40,9 @@ Compose machine learning applications in a modular way
 1. (NYUV2 dataloader) Easy monocular depth estimation 
 - https://colab.research.google.com/drive/1T2gONs_gst4zpdS7fBoIaQclgg3J2Jgk?usp=sharing
 
+2. Finetune deeplabv3 for any general binary segmentation using less than 100 samples
+- https://colab.research.google.com/drive/1y0wirrjuoha3_SQk52IMJmL99iPGT6DZ?usp=sharing
+
 
 Annotation and other computer vision utilities
 ----------------------------------------------
@@ -51,7 +54,8 @@ Annotation and other computer vision utilities
 2. Easy usage of superglue neural network based image feature matching
 - https://colab.research.google.com/drive/1fqnW1-Dlwz3fYlacTjMUmu5gxreGfjj6?usp=sharing
 
-
+3. Easy usage of holistically nested edge detection for generic high level edge detection
+- https://colab.research.google.com/drive/174STj0gsUZ4qOrbj_WFXhtSfwcef-oMi?usp=sharing
 
 
 
@@ -62,9 +66,24 @@ Annotation and other computer vision utilities
 
 Upcoming
 ========
+
+- Hollistic edge detection network (HED) - https://github.com/sniklaus/pytorch-hed pair it up with opencv distance transform
+
+- behavior transformers and using GPT - https://github.com/notmahi/bet and https://github.com/notmahi/miniBET
+
+- base transformer model definition + segformer model definitions pytorch
+
+- diffusion models from scratch pytorch
+
+- MIRnet keras for low light image enhancement - https://keras.io/examples/vision/mirnet/
+
+- SRGAN for image superresolution - https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Super-Resolution
+
 - differentiable pointcloud generation models - https://github.com/puhsu/point-clouds
 
 - image animation generation models - https://github.com/snap-research/articulated-animation (code cloned in /ml/misctools/articulated-animation/, run the working demo-> demo_outofbox.py)
+
+- FCOSnet pytorch - https://github.com/VectXmy/FCOS.Pytorch
 
 - dataloader for ouster lidar datasets
 
@@ -72,11 +91,6 @@ Upcoming
 
 - tum_rgbd dataloader
 
-- visual odometry utility (examples/sfm.py and examples/sfm3d/main.py)
-
-- deep_modular_reconstruction improvements - 3D scene mapping using superglue and GLPN depth and open3d registration functions
-
 - DeepLabv3 finetuning module
 
 - Resnet finetunining module for 2D image regregression (pose estimation example)
-

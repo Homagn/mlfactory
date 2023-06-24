@@ -3,7 +3,34 @@ from pathlib import Path
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from segdataset import SegmentationDataset
+import sys,os
+
+# An installation agnostic method to find and link to root of the package which is mlfactory
+#==========================================================
+import re
+try: #testing the functions locally without pip install
+  import __init__
+  cimportpath = os.path.abspath(__init__.__file__)
+  if 'extensions' in cimportpath:
+    print("local testing ")
+    import mlfactory
+    cimportpath = os.path.abspath(mlfactory.__file__)
+
+except: #testing while mlfactory is installed using pip
+  print("Non local testing")
+  import mlfactory
+  cimportpath = os.path.abspath(mlfactory.__file__)
+
+main_package_loc = cimportpath[:cimportpath.rfind('mlfactory')+len('mlfactory')]
+print("got main package location ",main_package_loc)
+
+
+os.environ['top'] = main_package_loc
+sys.path.append(os.path.join(os.environ['top']))
+#==========================================================
+
+
+from dataloaders.binary_seg_general.segdataset import SegmentationDataset
 
 
 def get_dataloader_sep_folder(data_dir: str,
