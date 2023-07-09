@@ -62,17 +62,17 @@ Annotation and other computer vision utilities
 More examples and use cases
 ===========================
 
-- Functionality to record gameplay from the screen for training behavior cloning, and also play model policies using pyautogui. See - 
+- Functionality to record gameplay from the screen for training behavior cloning, and also play model policies using pyautogui. See - https://github.com/Homagn/mlfactory/blob/master/datacreators/utils/gameplay_recorder.py
 
-- Dataloader class for images and labels using jsonfiles (Data needs to be saved in folders, each folder containing images and json labels). See - 
+- Dataloader class for images and labels using jsonfiles (Data needs to be saved in folders, each folder containing images and json labels). See - https://github.com/Homagn/mlfactory/blob/master/dataloaders/imgjsonloader.py
 
-- Training high quality and low weight variational autoencoders for larger dimension images and using custom data (uses subpixel convolution for upsampling). See - 
+- Training high quality and low weight variational autoencoders for larger dimension images and using custom data (uses subpixel convolution for upsampling). See - https://github.com/Homagn/mlfactory/blob/master/examples/variational_encoders/main.py
 
-- Latent GPT models for behavior cloning. Uses encoded representations from vae to train a GPT model for behavior cloning. See -
+- Latent GPT models for behavior cloning. Uses encoded representations from vae to train a GPT model for behavior cloning. See - https://github.com/Homagn/mlfactory/blob/master/examples/behavior_cloning/train_latent_gpt.py
 
-- Vision transformer minimal example for classification. See - 
+- Vision transformer minimal example for classification. See - https://github.com/Homagn/mlfactory/blob/master/models/pytorch/ViT.py
 
-- Timesformer model (pure attention based model for video classification ). See - 
+- Timesformer model (pure attention based model for video classification ). See - https://github.com/Homagn/mlfactory/blob/master/models/pytorch/timesformer.py
 
 
 
