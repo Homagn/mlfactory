@@ -1,0 +1,66 @@
+Installation stuff
+===================
+
+python3 -m pip install pyautogui
+
+sudo apt-get install scrot
+
+sudo apt-get install python3-tk
+
+sudo apt-get install python3-dev
+
+pip install python-xlib
+
+(for mss.tool fast screengrab )
+pip install mss
+
+
+How to run the behavior cloning project
+=======================================
+
+1. First record the game you want to behavior clone:
+---------------------------------------------------
+open datacreators/utils/gameplay_recorder.py
+edit the folder location in line 34 and also make sure that folder exists in the mentioned location
+you can change the mode to find_region to first find the region in the screen to capture 
+once you find the region, input those values in find_interesting_region() function
+change mode to record and run the code again it will record the gameplay and save it in the name you specified in folder variable
+
+
+2. Train variational encoding model :
+-------------------------------------
+go to examples/variational_encoders/main.py and focus on the variable cifar_trainset in line 151, there change the root variable to the exact location where the sampled gameplay images are placed
+sampled because it doesnt need to contain all the images in exact sequence, just relevant and distinct images covering all instances of the game
+then run the main.py
+After around 500 epochs you can check in the same folder generated_sample.png and reconstructed_sample.png will start to have meaningful images
+The trained weights would also be saved as pt files
+
+
+
+3. Train the latent gpt model :
+-------------------------------
+Now we will train gpt model on latent representations of the game image
+go to examples/behavior_clone/train_latent_gpt.py and edit the parameters of BigramLanguageModel() in line 109, also make sure the model definition is same in test_latent_gpt.py in the same folder
+also check the get_latents() function in both of the codes to vary the encoded representation to your liking (add biases if you want)
+
+run train_latent_gpt.py and after sufficient training it should produce some intelligent behavior
+You can now test the entire behavior cloning by opening the website for the game - https://www.crazygames.com/game/highway-racer
+and run test_latent_gpt.py 
+
+main_gan.py and main_simple.py were 2 variants I had tried to use timesformer to directly learn the actions without latent encoding and they didnt work well
+
+
+Current challenge which affects the performance:
+===============================================
+
+
+1.	If you check test_latent_gpt.py youll see that the model runs every 0.3 seconds which means it grabs screenshot also every 0.3 seconds because currently its implemented sequentially
+
+	However the training data screen grabs were collected every 0.03 seconds and the model has been trained on those sequences, so at test time the model has a very laggy reaction
+
+	How to solve ? - in the test code, use a seperate parallel process to grab images
+
+	or maybe in the dataloader use jl.skip_sampling = 10
+
+2.	It can be very challenging to capture and encode the minor variation details across the game so that the vae can produce distinct outputs for each image, need to find a way to cluster training
+	images to increase diversity while training vae

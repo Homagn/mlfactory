@@ -59,15 +59,25 @@ Annotation and other computer vision utilities
 
 
 
+More examples and use cases
+===========================
 
+- Functionality to record gameplay from the screen for training behavior cloning, and also play model policies using pyautogui. See - 
 
+- Dataloader class for images and labels using jsonfiles (Data needs to be saved in folders, each folder containing images and json labels). See - 
+
+- Training high quality and low weight variational autoencoders for larger dimension images and using custom data (uses subpixel convolution for upsampling). See - 
+
+- Latent GPT models for behavior cloning. Uses encoded representations from vae to train a GPT model for behavior cloning. See -
+
+- Vision transformer minimal example for classification. See - 
+
+- Timesformer model (pure attention based model for video classification ). See - 
 
 
 
 Upcoming
 ========
-
-- Hollistic edge detection network (HED) - https://github.com/sniklaus/pytorch-hed pair it up with opencv distance transform
 
 - behavior transformers and using GPT - https://github.com/notmahi/bet and https://github.com/notmahi/miniBET
 
@@ -90,7 +100,5 @@ Upcoming
 - Coco bounding box dataloader colab
 
 - tum_rgbd dataloader
-
-- DeepLabv3 finetuning module
 
 - Resnet finetunining module for 2D image regregression (pose estimation example)
