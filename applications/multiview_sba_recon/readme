@@ -1,0 +1,24 @@
+source - https://github.com/daovietanh190499/structure-from-motion/tree/main
+
+-Sparse bundle adjustment based photometric reconstruction in python using minimal dependencies
+-Uses DISK (pytorch) based feature matching
+-Relatively fast for a BA based method (1 frame per second)
+-Note this technique must be used with care as it may not work will camera sequences which are not well posed
+-What is well posed? - typically the consequtive camera frames must be placed significant distant apart (good baseline distance) while also looking at significant common number of points across 2 images. Will not work well when only camera transformation is rotation
+-look at images in view_pairs folder to get an idea of relative camera poses, view 2,3 and 4 are acceptable
+-Also make sure to supply as close to real as possible value of intrinsic matrix K
+-A counterpart of this is deep_modular_scene_mapper which tries to achieve dense reconstruction by estimating monocular depth using neural networks
+
+To run :
+- make sure K is set properly in get_camera_intrinsic_params() function
+- in the top of the code supply proper img_dir location which contains the sequentially named images
+- python sfm.py
+
+To do :
+- better options to specify img_dir and corresponding K directly 
+- integrate with top level pip project by creating class and create seperate demo in examples folder
+- seperate visualization function using open3d (currently inside the to_ply function)
+- seperate disc_features folder and put it as loadable asset outside the main code (like you did for superglue weights)
+
+- understand the BA technique used and use it to improve deep_modular_scene_reconstruction
+- try with superglue features instead of DISK features if possible

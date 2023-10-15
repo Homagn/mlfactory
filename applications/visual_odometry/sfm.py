@@ -70,6 +70,7 @@ class VisualOdometry:
         self.m = match_pair.matcher()
         self.sift = cv2.SIFT_create()
         self.bf = cv2.BFMatcher()
+        self.sparse_map = np.zeros((1, 3))
     # =========================================================================================================================================================================================================================== #
     # Get Random 8 points from different regions in a Image using Zhang's 8x8 Grid
     # =========================================================================================================================================================================================================================== #
@@ -195,6 +196,81 @@ class VisualOdometry:
         #print("linear traingulation ",X)
         return X
 
+    def triangulation(self, point_2d_1, point_2d_2, projection_matrix_1, projection_matrix_2) -> tuple:
+        '''
+        Triangulates 3d points from 2d vectors and projection matrices
+        returns projection matrix of first camera, projection matrix of second camera, point cloud 
+        '''
+        pt_cloud = cv2.triangulatePoints(point_2d_1, point_2d_2, projection_matrix_1.T, projection_matrix_2.T)
+        return projection_matrix_1.T, projection_matrix_2.T, (pt_cloud / pt_cloud[3])  
+
+    def get_3d_points(self, R, t, K, feature_0, feature_1, pose_sequence):
+        '''
+        pre_global_pose = pose_sequence[-2][:-1,:]
+        cur_global_pose = pose_sequence[-1][:-1,:]
+
+        pose_0 = np.matmul(K, pre_global_pose)
+        pose_1 = np.matmul(K, cur_global_pose)
+
+
+        feature_0, feature_1, points_3d = self.triangulation(pose_0, pose_1, feature_0, feature_1)
+        return points_3d
+        '''
+
+
+
+        matchesMask = self.matchesMask.ravel().tolist()
+        
+        p1 = feature_0.reshape(-1,1,2)
+        p2 = feature_1.reshape(-1,1,2)
+
+        #print("in get 3d points shape ",p1.shape, matchesMask.shape)
+
+        M_r = np.hstack((R, t))
+        M_l = np.hstack((np.eye(3, 3), np.zeros((3, 1))))
+
+        P_l = np.dot(K,  M_l)
+        P_r = np.dot(K,  M_r)
+
+        # undistort points
+        p1 = p1[np.asarray(matchesMask)==1,:,:]
+        p2 = p2[np.asarray(matchesMask)==1,:,:]
+        p1_un = cv2.undistortPoints(p1,K,None)
+        p2_un = cv2.undistortPoints(p2,K,None)
+        p1_un = np.squeeze(p1_un)
+        p2_un = np.squeeze(p2_un)
+
+        #triangulate points this requires points in normalized coordinate
+        point_4d_hom = cv2.triangulatePoints(P_l, P_r, p1_un.T, p2_un.T)
+        point_3d = point_4d_hom / np.tile(point_4d_hom[-1, :], (4, 1))
+        point_3d = point_3d[:3, :]
+
+        #point_3d = np.vstack(( point_3d, np.ones((point_3d.shape[1])) ))
+        #point_3d = np.matmul(pose_sequence[-1], point_3d)
+        #point_3d = point_3d[:-1,:].T
+
+        point_3d = point_3d.T
+
+        #print("point_3d shape ",point_3d.shape)
+        
+        return point_3d
+
+
+
+    def accumulate_sparse_map(self, R, t, K, feature_0, feature_1, pose_sequence):
+        p3d = self.get_3d_points(R, t, K, feature_0, feature_1, pose_sequence)
+        '''
+        p3d = cv2.convertPointsFromHomogeneous(p3d.T)
+        p3d = p3d[:, 0, :]
+        '''
+        #print("shapes check ",self.sparse_map.shape, p3d.shape)
+        self.sparse_map = np.vstack((self.sparse_map, p3d))
+
+        return self.sparse_map
+
+
+
+
     # =========================================================================================================================================================================================================================== #
     # Estimate the camera Pose
     # =========================================================================================================================================================================================================================== #
@@ -275,6 +351,13 @@ class VisualOdometry:
                 point_correspondence_cf[i] = kp_cf[match.queryIdx].pt[0], kp_cf[match.queryIdx].pt[1]
                 point_correspondence_nf[i] = kp_nf[match.trainIdx].pt[0], kp_nf[match.trainIdx].pt[1]
             #F = func.estimate_fundamental_matrix_RANSAC(point_correspondence_cf, point_correspondence_nf, grid, 0.05)                  # Estimate the Fundamental matrix # 
+            draw_params = dict(matchColor = (0,255,0), # draw matches in green color
+                           singlePointColor = None,
+                           flags = 2)
+
+            img_siftmatch = cv2.drawMatches(current_frame,kp_cf,next_frame,kp_nf,best_matches,None,**draw_params)
+            cv2.imshow('sift_match',img_siftmatch)
+            cv2.waitKey(1)
 
         else:
 
@@ -295,6 +378,7 @@ class VisualOdometry:
     def find_pose_change(self, K, point_correspondence_cf, point_correspondence_nf, essential_estimation):
         if essential_estimation=="cv":
             E, mask = cv2.findEssentialMat(point_correspondence_cf, point_correspondence_nf, K, cv2.RANSAC, 0.999, 1.0);
+            self.matchesMask = mask
             #E, mask = cv2.findEssentialMat(point_correspondence_cf, point_correspondence_nf, K, cv2.RANSAC, 0.5, 1.0)
         
         elif essential_estimation=="svd":
@@ -306,7 +390,10 @@ class VisualOdometry:
             E = self.estimate_Essential_Matrix(K, F)                                                                                     # Estimate the Essential Matrix #
         
 
-        
+        #wherever mask.ravel()==0 those are outliers so chose inlier correspondences
+        point_correspondence_cf = point_correspondence_cf[mask.ravel() == 1]
+        point_correspondence_nf = point_correspondence_nf[mask.ravel() == 1]
+
         pose = self.camera_pose(K,E)                                                                                                        # Estimate the Posses Matrix #
         # -----> Estimate Rotationa and Translation points <----- #
         flag = 0
@@ -318,7 +405,23 @@ class VisualOdometry:
 
         R = pose['R'+reg]
         t = pose['C'+reg]
-        if t[2] < 0: t = -t
+        #if t[2] < 0: t = -t
+        
+
+
+
+
+        #this part below supposed to be same as above but produces wrong results
+        '''
+        point_correspondence_cf = point_correspondence_cf[mask.ravel() == 1]
+        point_correspondence_nf = point_correspondence_nf[mask.ravel() == 1]
+        _, rot_matrix, tran_matrix, em_mask = cv2.recoverPose(E, point_correspondence_cf, point_correspondence_nf, K)
+        #print("compare rotations ",rot_matrix, R)
+        #print("compare translations ",tran_matrix, t)
+        R = rot_matrix
+        t = tran_matrix
+        #if t[2] >0 : t =-t
+        '''
 
         return R, t
 
@@ -345,7 +448,28 @@ class VisualOdometry:
         #====================================
         return Translation, Rotation, pose_sequence
 
-    def visualize_trajectory(self,pose_sequence, every = 10, size = 10, display_result = ''):
+    def visualize_trajectory(self,pose_sequence, show_sparse_points = True, every = 10, size = 10, display_result = ''):
+        if show_sparse_points:
+            out_points = self.sparse_map.reshape(-1, 3) *200
+            
+            verts = out_points
+            colors = np.zeros_like(verts)
+
+            '''
+            mean = np.mean(verts[:, :3], axis=0)
+            scaled_verts = verts[:, :3] - mean
+            dist = np.sqrt(scaled_verts[:, 0] ** 2 + scaled_verts[:, 1] ** 2 + scaled_verts[:, 2] ** 2)
+            indx = np.where(dist < np.mean(dist) + 300)
+            verts = verts[indx]
+            '''
+
+            pcd = o3d.geometry.PointCloud()
+            xyz = verts
+            print("number of points ",xyz.shape[0])
+
+            pcd.points = o3d.utility.Vector3dVector(xyz)
+            pcd.colors = o3d.utility.Vector3dVector(colors)
+
         ######################################
         #show all the coordinate transformations
         coord_meshes = []
@@ -364,10 +488,18 @@ class VisualOdometry:
             coord_mesh.transform(pose_sequence[i])
             if i%every==0:
                 coord_meshes.append(coord_mesh)
+        
+        
+
         if display_result=='colab':
             project_rgbd.show_pcd_colab(coord_meshes)
         else:
+
+
             project_rgbd.show_pcd(coord_meshes)
+
+        if show_sparse_points:
+            project_rgbd.show_pcd([pcd])
 
         ######################################
 

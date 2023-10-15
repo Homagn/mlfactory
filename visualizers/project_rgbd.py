@@ -146,6 +146,88 @@ def project_rgbd_to_pointcloud(rgb_file,depth_file, camera_params, normalizer = 
         rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
         depth = cv2.imread("depth.png",0)
         '''
+        rgb = copy.copy(cv2.cvtColor(rgb_file, cv2.COLOR_BGR2RGB))
+        depth = copy.copy(depth_file)
+
+
+    
+    
+
+
+    color = rgb
+    #get the Z coordinates of the pointcloud ordered by the pixel locations in rgb image (depth image)
+    Z = depth/camera_params["scalingFactor"]
+    #Z = depth/np.max(depth)
+
+    
+    #not sure which one to use of zi or zd or dont even use correction
+    #zi,zd = correction(Z)
+    #Z= np.concatenate((zd[:128,:],zi[128:,:]))
+    #Z = zi
+
+
+    #print("max and min of Z ",np.max(Z), np.min(Z))
+
+    imgrid = np.mgrid[0:rgb.shape[0],0:rgb.shape[1]] 
+    #get the X and Y coordinates of the pointcloud ordered by the pixel locations in rgb image
+
+    mask = np.where(Z!=0.0, Z, 0.0)
+    #mask = np.where(Z==0.0, Z, 1.0)
+
+    X =  (imgrid[1,:,:] - camera_params["centerX"]) * mask / camera_params["fx"] 
+    Y =  (imgrid[0,:,:] - camera_params["centerY"]) * mask / camera_params["fy"] 
+
+    #X =  (imgrid[1,:,:] - camera_params["centerX"])  / camera_params["fx"] 
+    #Y =  (imgrid[0,:,:] - camera_params["centerY"])  / camera_params["fy"] 
+
+
+
+    
+    #print("X Y Z shapes ",X.shape,Y.shape,Z.shape)
+
+    #convert X,Y,Z points to a pcd
+    xyz = np.dstack([X,Y,Z]).reshape((X.shape[0]*X.shape[1],3))/ normalizer
+    #print("XYZ shape ",xyz.shape)
+    colors = color.reshape((X.shape[0]*X.shape[1],3))/255.0
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(xyz)
+    pcd.colors = o3d.utility.Vector3dVector(colors)
+
+
+    #rotate the pcd along x axis by 180 degrees to get normal orientation pcd
+    R = pcd.get_rotation_matrix_from_xyz((np.pi , 0, 0))
+    pcd = pcd.rotate(R, center=(0,0,0))
+
+
+    #recover rotated X,Y,Z from the rotated pcd
+    rpts = np.array(pcd.points).reshape((X.shape[0],X.shape[1],3))
+    X,Y,Z = rpts[:,:,0], rpts[:,:,1], rpts[:,:,2]
+    #print("X Y Z shapes ",X.shape,Y.shape,Z.shape)
+    colors = np.array(pcd.colors).reshape((X.shape[0],X.shape[1],3))*255.0
+    
+
+    #for each pixel location in the RGB image stores the corresponding 3d coordinate it is mapped to
+    pixel_points = np.dstack([X.T,Y.T,Z.T])
+    #print("pixel points shape ",pixel_points.shape)
+    return pcd, pixel_points
+
+"""
+
+def project_rgbd_to_pointcloud(rgb_file,depth_file, camera_params, normalizer = 255.0 ): #we divide the pcd points in the end using normalizer
+    #ref - https://stackoverflow.com/questions/49598937/how-to-convert-the-depth-map-to-3d-point-clouds
+
+    if isinstance(rgb_file,str) and isinstance(depth_file,str):
+        rgb = cv2.imread(rgb_file)
+        depth = cv2.imread(depth_file,0)
+    else:
+        '''
+        cv2.imwrite("rgb.png",rgb_file)
+        cv2.imwrite("depth.png",depth_file)
+        rgb = cv2.imread("rgb.png")
+
+        rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
+        depth = cv2.imread("depth.png",0)
+        '''
         try:
             rgb = copy.copy(cv2.cvtColor(rgb_file, cv2.COLOR_BGR2RGB))
         except:
@@ -223,7 +305,7 @@ def project_rgbd_to_pointcloud(rgb_file,depth_file, camera_params, normalizer = 
     pixel_points = np.dstack([X.T,Y.T,Z.T])
     print("pixel points shape ",pixel_points.shape)
     return pcd, pixel_points
-
+"""
 
 def pcd_from_rgbd_native(rgb, dep, camera_params):
     #uses open3d native functions to speedily construct pointcloud from rgb depth tuple
@@ -247,7 +329,7 @@ def pcd_from_rgbd_native(rgb, dep, camera_params):
 
     depth = o3d.geometry.Image(d)
     rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(color, depth,
-                                                              depth_scale=1.0,
+                                                              depth_scale=2,
                                                               depth_trunc=0.7,
                                                               convert_rgb_to_intensity=False)
     intrinsic = o3d.camera.PinholeCameraIntrinsic(width, height, fx, fy, cx, cy)
@@ -276,8 +358,8 @@ def show_pcd_from_rgbd(rgb, d, camera_params, save_loc = ""):
     cv2.imshow("depth", d)
     cv2.waitKey(0)
 
-    cv2.imwrite("rgb.png",rgb)
-    cv2.imwrite("depth.png",d)
+    #cv2.imwrite("rgb.png",rgb)
+    #cv2.imwrite("depth.png",d)
 
     print("Max of depth raw ",np.max(d))
     print("mean of depth raw ",np.mean(d))

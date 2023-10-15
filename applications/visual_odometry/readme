@@ -1,0 +1,11 @@
+
+about:
+
+-A fast technique to use visual feature matching (sift) to just find the relative camera rotation and translation between consequtive frames
+-No need to take well poses camera images
+-Does not do any reconstruction for now (triangulation)
+-10 frames/sec
+
+to run 
+
+- go to ../../examples/visual_odemetry/ and run main.py

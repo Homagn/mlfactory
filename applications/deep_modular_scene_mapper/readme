@@ -1,5 +1,6 @@
 extra requirements:
 
+apt-get update
 pip install --upgrade pip
 pip install -U open3d
 
@@ -8,6 +9,10 @@ apt-get install python3-tk
 pip install --user numba
 pip install scikit-image
 
+
+about:
+Uses monocular depth estimation (pytorch) + feature matching (superglue) + ICP (open3d) to create a dense 3d map from sequential 2d images
+to do - need to incorporate photometric bundle adjustment or tsdf fusion
 
 to run :
 first extract the video "indoor_movie.MOV" to "extracted/" folder by running read_video.py

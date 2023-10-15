@@ -78,6 +78,15 @@ More examples and use cases
 
 Upcoming
 ========
+- applications/multiview_sba_recon integrate with the pip project as a functionality by creating demo in examples/ folder
+
+- integrate the photometric bundle adjustment part of applications/multiview_sba_recon in deep_modular_reconstruction module
+
+- after integrating applications/multiview_sba_recon use it to input estimated poses to construct nerfs (pytorch)
+
+- examples/variational_encoders/main_b.py, integrate variational encoders with the pip project and remove results folder in it taking up space
+
+- examples/behavior_cloning/train_latent_gpt.py , test_latent_gpt.py integrate with the pip project
 
 - behavior transformers and using GPT - https://github.com/notmahi/bet and https://github.com/notmahi/miniBET
 

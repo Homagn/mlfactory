@@ -1,0 +1,13 @@
+extra requirements:
+
+apt-get update
+pip install --upgrade pip
+pip install -U open3d
+
+apt-get install python3-tk
+pip install scikit-image
+
+
+to run :
+first extract the video "indoor_movie.MOV" to "extracted/" folder by running read_video.py
+then simply run python main.py and it will show you visualization of pcds stiched and the coordinate frame poses

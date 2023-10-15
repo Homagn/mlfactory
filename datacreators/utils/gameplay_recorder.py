@@ -34,7 +34,7 @@ from datetime import datetime as dt
 import mss.tools #for fast screenshots
 
 
-folder = "/datasets/behavior_cloning/game11/"
+folder = "/datasets/behavior_cloning/maze_game/game15/"
 idx = 0
 js = jsonwriter(folder+"samplelabels.json")
 current = set()
@@ -60,7 +60,7 @@ def find_interesting_region():
 
 
 
-def record_screen(folder, idx):
+def record_screen(folder, idx, save_img_size = (256,256)):
     #im = pyautogui.screenshot(region=(823, 153, 997, 464)) #takes around 0.15 s
     #cv2.imwrite(folder+"/"+str(idx)+".png", np.array(im))
 
@@ -71,10 +71,16 @@ def record_screen(folder, idx):
         output = folder+"/"+str(idx)+".png"
 
         # Grab the data
-        sct_img = sct.grab(monitor) #takes around 0.03 s
-
+        sct_img = np.array(sct.grab(monitor)) #takes around 0.03 s
+        #print("sct image size ",sct_img.size)
         # Save to the picture file
-        mss.tools.to_png(sct_img.rgb, sct_img.size, output=output)
+        #mss.tools.to_png(sct_img.rgb, sct_img.size, output=output)
+
+        cv_img = cv2.cvtColor(sct_img, cv2.COLOR_BGRA2BGR)
+        cv_img = cv2.resize(cv_img, save_img_size)
+
+        cv2.imwrite(output, cv_img)
+        #mss.tools.to_png(sct_img.rgb, sct_img.size, output=output)
         #print(output)
 
 

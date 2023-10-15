@@ -6,6 +6,36 @@ import torch.nn as nn
 from torch.nn import functional as F
 
 
+import os,sys
+# An installation agnostic method to find and link to root of the package which is mlfactory
+#==========================================================
+import re
+try: #testing the functions locally without pip install
+  import __init__
+  cimportpath = os.path.abspath(__init__.__file__)
+  if 'extensions' in cimportpath:
+    print("local testing ")
+    import mlfactory
+    cimportpath = os.path.abspath(mlfactory.__file__)
+
+except: #testing while mlfactory is installed using pip
+  print("Non local testing")
+  import mlfactory
+  cimportpath = os.path.abspath(mlfactory.__file__)
+
+main_package_loc = cimportpath[:cimportpath.rfind('mlfactory')+len('mlfactory')]
+print("got main package location ",main_package_loc)
+
+
+os.environ['top'] = main_package_loc
+sys.path.append(os.path.join(os.environ['top']))
+#==========================================================
+
+
+from models.pytorch.conv_reducer import Encoder as Encoder_image
+
+
+
 
 # data loading
 def get_batch(split):
@@ -104,6 +134,100 @@ class Block(nn.Module):
         x = x + self.ffwd(self.ln2(x))
         return x
 
+
+# super simple bigram model
+class visgpt(nn.Module):
+    # make sure n_embd is a multiple of n_heads
+    def __init__(self, n_embd = 32, block_size = 10, action_size = 9, n_heads = 8, depth = 6, dropout = 0.2, device = "cuda"): #n_embd should now be equal to the latent dimension of the variational autoencoder, block size is context length or the number of past time steps to use
+        super().__init__()
+        # each token directly reads off the logits for the next token from a lookup table
+        self.n_embd = n_embd
+        self.block_size = block_size
+        self.vocab_size = action_size
+        self.n_head = n_heads
+        self.n_layer = depth
+        self.dropout = dropout
+        self.device = device
+        self.enc2d = Encoder_image(shape = (256,256,1), n_hidden = n_embd)
+        self.loss_type = "mse"
+        
+        self.enc_proj_m = nn.Sequential(nn.Linear(n_embd, n_embd),
+                                    nn.Linear(n_embd, n_embd),
+                                    nn.Sigmoid(), 
+                                   )
+
+        self.enc_proj_v = nn.Sequential(nn.Linear(n_embd, n_embd),
+                                    nn.Linear(n_embd, n_embd),
+                                    nn.Sigmoid(), 
+                                   )
+
+        assert self.n_embd%self.n_head==0, f"Please make sure n_embd is divisible by n_heads"
+
+        #self.token_embedding_table = nn.Embedding(vocab_size, self.n_embd)
+        self.laten_embedding_table = nn.Linear(self.n_embd, self.n_embd) #using linear instead of embedding this time because the latent space is already continuous
+
+        
+
+        self.position_embedding_table = nn.Embedding(self.block_size, self.n_embd)
+        self.blocks = nn.Sequential(*[Block(self.n_embd, self.n_head, self.block_size, self.dropout) for _ in range(self.n_layer)])
+        self.ln_f = nn.LayerNorm(self.n_embd) # final layer norm
+        self.lm_head = nn.Linear(self.n_embd, self.vocab_size)
+
+    def forward(self, x, targets=None):
+        B, T = x.shape[0], x.shape[1]
+
+        # idx and targets are both (B,T) tensor of integers
+        #tok_emb = self.laten_embedding_table( latent_state )#self.token_embedding_table(idx) # (B,T,C)  # Instead of embedding tokens now the input is a vector of real numbers which is the latent representation of full state
+        x = x.view((B*T,1,256,256))
+        enc = self.enc2d( x )
+
+        '''
+        enc_m = self.enc_proj_m(enc)
+        enc_v = self.enc_proj_v(enc)
+        enc_ve = torch.exp(0.5 * enc_v)
+
+        epsilon = torch.randn_like(enc_ve)        # sampling epsilon        
+        tok_emb = enc_m + enc_v*epsilon                          # reparameterization trick
+        '''
+
+
+
+
+        tok_emb = self.enc2d( x )
+        
+        tok_emb = tok_emb.view((B,T,self.n_embd))
+        pos_emb = self.position_embedding_table(torch.arange(T, device=self.device)) # (T,C)
+        #print("tok embedding shape ",tok_emb.shape)
+        #print("pos embedding shape ",pos_emb.shape)
+        x = tok_emb + pos_emb # (B,T,C)
+        x = self.blocks(x) # (B,T,C)
+        x = self.ln_f(x) # (B,T,C)
+        logits = self.lm_head(x) # (B,T,vocab_size)
+
+        if targets is None:
+            loss = None
+        else:
+
+            if self.loss_type=="mse":
+                
+                B, T, C = logits.shape
+                logits = logits.view(B*T, C)
+                lc = logits.clone()
+                tg = targets.view((-1,1))
+
+                logits.scatter_(1, tg, 1)
+                loss = F.mse_loss(lc,logits)
+            else:
+                B, T, C = logits.shape
+                logits = logits.view(B*T, C)
+                targets = targets.view(B*T)
+                #loss_kld = - 0.5 * torch.sum(1+ enc_v - enc_m.pow(2) - enc_v.exp())
+                loss = F.cross_entropy(logits, targets) #+ loss_kld
+
+        return logits, loss
+
+
+
 # super simple bigram model
 class BigramLanguageModel(nn.Module):
     # make sure n_embd is a multiple of n_heads
@@ -117,6 +241,8 @@ class BigramLanguageModel(nn.Module):
         self.n_layer = depth
         self.dropout = dropout
         self.device = device
+
+        self.loss_type = "mse"
 
         assert self.n_embd%self.n_head==0, f"Please make sure n_embd is divisible by n_heads"
 
@@ -146,10 +272,47 @@ class BigramLanguageModel(nn.Module):
         if targets is None:
             loss = None
         else:
-            B, T, C = logits.shape
-            logits = logits.view(B*T, C)
-            targets = targets.view(B*T)
-            loss = F.cross_entropy(logits, targets)
+            if self.loss_type=="mse":
+                '''
+                B, T, C = logits.shape
+                lc = logits.clone()
+                #loss = torch.FloatTensor([0.0], device = self.device, requires_grad = True)
+                
+                #loss = torch.tensor(0.0, device = self.device)
+                total_loss = torch.zeros(T, device = self.device)
+
+
+                
+                for t in range(T):
+                    #print("shapes ",targets[:,t].shape, logits[:,t,:].shape)
+                    l = logits[:,t,:]
+                    tg = targets[:,t].view((-1,1))
+                    
+                    mse_targ = l.scatter_(1, tg, 1)
+                    
+                    loss = F.mse_loss(lc[:,t,:],mse_targ)
+                    print("loss ",loss)
+                '''
+
+                B, T, C = logits.shape
+                logits = logits.view(B*T, C)
+                lc = logits.clone()
+                tg = targets.view((-1,1))
+
+                logits.scatter_(1, tg, 1)
+                loss = F.mse_loss(lc,logits)
+
+
+                    
+                    
+                
+                
+
+            else:
+                B, T, C = logits.shape
+                logits = logits.view(B*T, C)
+                targets = targets.view(B*T)
+                loss = F.cross_entropy(logits, targets)
 
         return logits, loss
 

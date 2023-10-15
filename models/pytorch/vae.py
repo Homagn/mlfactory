@@ -117,12 +117,16 @@ class Encoder_2d(nn.Module):
         self.FC_var   = nn.Linear (hidden_dim, latent_dim)
         
         self.LeakyReLU = nn.LeakyReLU(0.2)
+        self.sigm = nn.Sigmoid() #constrain the output of encoder to be in the 0 to 1 range
+        self.relu = nn.ReLU()
         
         self.training = True
         
     def forward(self, x):
         h = self.enc2d(x)
         h = self.LeakyReLU(self.FC_input2(h))
+        #h = self.relu(self.FC_input2(h))
+        #h = self.sigm(self.FC_input2(h))
         mean     = self.FC_mean(h)
         log_var  = self.FC_var(h) 
 
@@ -141,10 +145,15 @@ class Decoder_2d(nn.Module):
 
         
         self.LeakyReLU = nn.LeakyReLU(0.2)
+        self.relu = nn.ReLU()
         
-    def forward(self, x):
+    def forward(self, x): #do not use leaky relu because its a weak non linearity, useful only when too much noise in data
         h     = self.LeakyReLU(self.FC_hidden(x))
         h     = self.LeakyReLU(self.FC_hidden2(h))
+
+        #h     = self.relu(self.FC_hidden(x))
+        #h     = self.relu(self.FC_hidden2(h))
+        
         x_hat = self.final_proj(self.dec2d(h))
         x_hat = self.final_act(x_hat)
         
